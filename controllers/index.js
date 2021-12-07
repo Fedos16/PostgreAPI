@@ -60,6 +60,8 @@ functions.events = async function(req, res) {
     try {
         const { token, location, date, time, category, type, filter_confirmed, filter_important, filter_removed } = req.body;
 
+        console.log(req.body);
+
         const user = await db.query('SELECT login FROM users WHERE token = $1', [ token ]);
         if (user.rowCount == 0) {
             res.json({ ok: false, text: 'Доступ запрещен' });
@@ -125,23 +127,26 @@ functions.events = async function(req, res) {
             numParams ++;
         }
 
-        if (filter_confirmed) {
+        if (filter_confirmed !== undefined) {
             queryString += ` and (is_confirmed = $${numParams + 1})`;
             params.push(filter_confirmed);
             numParams ++;
         }
 
-        if (filter_important) {
+        if (filter_important !== undefined) {
             queryString += ` and (is_important = $${numParams + 1})`;
             params.push(filter_important);
             numParams ++;
         }
 
-        if (filter_removed) {
-            queryString += ` and (is_removed = $${numParams + 1})`;
-            params.push(filter_removed);
-        } else {
-            queryString += ` and (is_removed IS NULL)`;
+        if (filter_removed !== undefined) {
+            if (filter_removed) {
+                queryString += ` and (is_removed = $${numParams + 1})`;
+                params.push(filter_removed);
+            } else {
+                queryString += ` and (is_removed IS NULL)`;
+            }
+            
         }
         
 
