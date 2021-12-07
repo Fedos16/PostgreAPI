@@ -69,11 +69,28 @@ functions.events = async function(req, res) {
         let dates = date.split('-');
         let times = time.split('-');
 
-        let start = dates[0] + ' ' + times[0];
+        let start = dates[0];
         let end;
-        if (dates.length > 1 || times.length > 1) {
-            (dates.length > 1) ? end = dates[1] : end = dates[0];
-            (times.length > 1) ? end += ' ' + times[1] : end += ' ' + times[0];
+
+        let typeTime = 'Positiv';
+        if (dates.length > 1) {
+            end = dates[1];
+        }
+        
+        if (times.length > 1) {
+
+            if (times[0]) {
+                if (!end) end = dates[0];
+                start += ' ' + times[0];
+                end += ' ' + times[1];
+            } else {
+                start += ' ' + times[1];
+                typeTime = 'Negativ';
+            }
+
+        } else {
+            start += ' ' + times[0];
+            if (end) end += ' ' + times[0];
         }
 
         let numParams = 1;
@@ -86,8 +103,13 @@ functions.events = async function(req, res) {
             params.push(end);
             numParams = 3;
         } else {
-            queryString += ` and (time = $2)`;
-            params.push(start);
+            if (typeTime == 'Positiv') {
+                queryString += ` and (time >= $2)`;
+                params.push(start);
+            } else {
+                queryString += ` and (time <= $2)`;
+                params.push(start);
+            }
             numParams = 2;
         }
 
